@@ -25,13 +25,13 @@ def main():
 
     st.title("Распознавание объектов на видео")
 
-    uploaded_video = st.file_uploader("Загрузите видео", type=["mp4", "avi", "mov"])
+    uploaded_video = st.file_uploader("Загрузите видео", type=["mp4", "avi"])
 
-    if uploaded_video:
+    if uploaded_video is not None:
         tfile = tempfile.NamedTemporaryFile(delete=False)
         tfile.write(uploaded_video.read())
-
         cap = cv2.VideoCapture(tfile.name)
+
         stframe = st.empty()
 
         while cap.isOpened():
@@ -39,27 +39,25 @@ def main():
             if not ret:
                 break
 
-            results_pl = model_pl(frame)
-            results_sym = model_sym(frame)
             results_other = model_other(frame)
+            result = results_other[0]
 
-            # Объединение всех результатов
-            results_all = results_pl + results_sym + results_other
-
-            for result in results_all:
+            if result.boxes is not None:  # Проверяем наличие обнаруженных объектов
                 for box in result.boxes.data.cpu().numpy():
-                    x1, y1, x2, y2, score, class_id = box
-                    label = result.names[int(class_id)]
-                    if label in allowed_vehicles:
-                        color = (0, 255, 0)
+                    x1, y1, x2, y2, score, class_id = map(int, box)
+                    cls = model_other.names[class_id]
+                    label = f"{cls}: {score:.2f}"
+
+                    if cls in allowed_vehicles:
+                        color = (0, 255, 0)  # Зеленый для разрешенных транспортных средств
                     else:
-                        color = (0, 0, 255)
+                        color = (0, 0, 255)  # Красный для запрещенных
 
-                    cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), color, 2)
-                    cv2.putText(frame, label, (int(x1), int(y1)-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
+                    cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+                    cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
 
-            stframe.image(frame, channels='BGR')
-
+            stframe.image(frame, channels="BGR")
+        
         cap.release()
         os.remove(tfile.name)
 
