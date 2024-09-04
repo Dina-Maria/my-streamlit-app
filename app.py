@@ -7,25 +7,36 @@ from PIL import Image
 import time
 
 
+
 def read_allowed_vehicles(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
         allowed_vehicles = file.read().splitlines()
     return allowed_vehicles
 
+# Загрузка моделей
+model_pl_path = r"c:\Users\alex9\Desktop\проект КСК ИТ-2\yolov8s_Plates\best.pt"
+model_sym_path = r"c:\Users\alex9\Desktop\проект КСК ИТ-2\yolov8s_symbols\best.pt"
+model_sp_tr_path = r"c:\Users\alex9\Desktop\проект КСК ИТ-2\yolov8_Spectransport\best.pt"
+
+# Проверка существования файлов
+if not os.path.isfile(model_pl_path):
+    raise FileNotFoundError(f"'{model_pl_path}' does not exist")
+if not os.path.isfile(model_sym_path):
+    raise FileNotFoundError(f"'{model_sym_path}' does not exist")
+if not os.path.isfile(model_sp_tr_path):
+    raise FileNotFoundError(f"'{model_sp_tr_path}' does not exist")
 
 # Загрузка моделей
-model_pl = YOLO(
-    "c:/Users/alex9/Desktop/проект КСК ИТ-2/Обучение номерной знак/yolov8s_Plates.zip")
-model_sym = YOLO(
-    "c:/Users/alex9/Desktop/проект КСК ИТ-2/обученная yolov8s Символы/yolov8s_symbols.zip")
-model_sp_tr = YOLO(
+model_pl = YOLO(model_pl_path)
+model_sym = YOLO(model_sym_path)
+model_sp_tr = YOLO(model_sp_tr_path)
 
-    "C:/Users/alex9/Desktop/проект КСК ИТ-2/обученная модель спецтранспорт/yolov8_Spectransport.zip")
+print("Модели загружены успешно")
 
 letters = ['A', 'B', 'C', 'E', 'H', 'K', 'M', 'O', 'P', 'T',
            'X', 'Y', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 # Укажите путь к вашему текстовому файлу
-allowed_vehicles_file = "C:\Users\alex9\Desktop\проект КСК ИТ-2\allowed_vehicles.txt"
+allowed_vehicles_file = r"C:\Users\alex9\Desktop\проект КСК ИТ-2\allowed_vehicles.txt"
 allowed_vehicles = read_allowed_vehicles(
     allowed_vehicles_file)  # Чтение номеров из файла
 
